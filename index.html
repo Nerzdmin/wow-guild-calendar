@@ -124,6 +124,13 @@
             font-style: italic;
             color: var(--wow-gold);
         }
+        
+        /* Error message style */
+        .error-message {
+            color: #ff6b6b;
+            margin-top: 10px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -136,6 +143,7 @@
             <h2>Enter Guild Password</h2>
             <input type="password" id="password" placeholder="Shared guild password">
             <button onclick="login()">Enter Calendar</button>
+            <div id="errorMessage" class="error-message">Incorrect password!</div>
         </div>
         
         <div class="calendar-content" id="calendarContent">
@@ -158,8 +166,10 @@
     </div>
     
     <script>
+        // ========= CONFIGURATION =========
         // SET YOUR PASSWORD HERE
         const GUILD_PASSWORD = "vbk!FYK7fac8yew";
+        // =================================
         
         function login() {
             const password = document.getElementById('password').value;
@@ -168,7 +178,7 @@
                 document.getElementById('calendarContent').style.display = 'block';
                 loadEvents();
             } else {
-                alert("Wrong password! Ask your Guild Master for the correct one.");
+                document.getElementById('errorMessage').style.display = 'block';
             }
         }
         
@@ -183,16 +193,27 @@
                 return;
             }
             
+            // Create event object
             const event = {
-                dungeon,
+                id: Date.now(), // Unique ID
+                dungeon: dungeon,
                 loot: loot || "Any upgrades",
-                player,
-                time: new Date(eventTime).toLocaleString()
+                player: player,
+                time: eventTime,
+                timestamp: new Date(eventTime).getTime()
             };
             
-            // Save to local storage
-            const events = JSON.parse(localStorage.getItem('wowEvents') || [];
+            // Get existing events
+            let events = [];
+            const storedEvents = localStorage.getItem('wowEvents');
+            if(storedEvents) {
+                events = JSON.parse(storedEvents);
+            }
+            
+            // Add new event
             events.push(event);
+            
+            // Save back to storage
             localStorage.setItem('wowEvents', JSON.stringify(events));
             
             // Refresh events list
@@ -206,30 +227,63 @@
         }
         
         function loadEvents() {
-            const events = JSON.parse(localStorage.getItem('wowEvents')) || [];
+            const storedEvents = localStorage.getItem('wowEvents');
             const eventsList = document.getElementById('eventsList');
+            
+            if(!storedEvents) {
+                eventsList.innerHTML = '<p>No events scheduled yet!</p>';
+                return;
+            }
+            
+            const events = JSON.parse(storedEvents);
+            
+            // Sort events by date
+            events.sort((a, b) => a.timestamp - b.timestamp);
             
             if(events.length === 0) {
                 eventsList.innerHTML = '<p>No events scheduled yet!</p>';
                 return;
             }
             
+            // Clear existing events
             eventsList.innerHTML = '';
             
+            // Format and display events
             events.forEach(event => {
+                const eventDate = new Date(event.time);
+                const formattedDate = eventDate.toLocaleString();
+                
                 const eventCard = document.createElement('div');
                 eventCard.className = 'event-card';
                 eventCard.innerHTML = `
                     <div class="event-header">
                         <h3>${event.dungeon}</h3>
-                        <span class="event-date">${event.time}</span>
+                        <span class="event-date">${formattedDate}</span>
                     </div>
                     <p><strong>Loot Target:</strong> ${event.loot}</p>
                     <p><strong>Organizer:</strong> ${event.player}</p>
+                    <button class="btn" onclick="deleteEvent(${event.id})" style="margin-top:10px;">Remove</button>
                 `;
                 eventsList.appendChild(eventCard);
             });
         }
+        
+        function deleteEvent(id) {
+            if(!confirm("Are you sure you want to remove this event?")) return;
+            
+            const storedEvents = localStorage.getItem('wowEvents');
+            if(storedEvents) {
+                let events = JSON.parse(storedEvents);
+                events = events.filter(event => event.id !== id);
+                localStorage.setItem('wowEvents', JSON.stringify(events));
+                loadEvents();
+            }
+        }
+        
+        // Initialize page
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') login();
+        });
     </script>
 </body>
 </html>
