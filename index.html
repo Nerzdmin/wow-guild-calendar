@@ -1,128 +1,497 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>WoW Guild Calendar</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WoW Classic Guild Calendar</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* WoW Classic Theme */
         :root {
             --wow-gold: #c8aa6e;
             --wow-brown: #372d29;
             --wow-dark: #0e0b0b;
+            --wow-blue: #0e86ca;
+            --wow-green: #1eff00;
+            --wow-purple: #a335ee;
             --wow-light: #e9dec3;
         }
         
-        body {
-            background: url('https://i.imgur.com/Y4YvQa2.jpg') no-repeat center center fixed;
-            background-size: cover;
-            font-family: 'Times New Roman', serif;
-            color: var(--wow-light);
+        * {
+            box-sizing: border-box;
             margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            background: url('https://i.imgur.com/7XZfVjW.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--wow-light);
+            line-height: 1.6;
+            min-height: 100vh;
             padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         
         .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background-color: rgba(14, 11, 11, 0.85);
+            max-width: 1200px;
+            width: 100%;
+            background-color: rgba(14, 11, 11, 0.9);
             border: 2px solid var(--wow-gold);
-            border-radius: 5px;
-            padding: 20px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.8);
+            margin-top: 20px;
         }
         
         header {
             text-align: center;
             border-bottom: 1px solid var(--wow-gold);
-            padding-bottom: 15px;
+            padding-bottom: 20px;
             margin-bottom: 25px;
+            position: relative;
+        }
+        
+        .logo {
+            position: absolute;
+            top: 0;
+            left: 20px;
+            font-size: 2rem;
+            color: var(--wow-gold);
         }
         
         header h1 {
             color: var(--wow-gold);
             text-shadow: 2px 2px 4px #000;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #8e6d3f, #c8aa6e, #8e6d3f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            color: #a59263;
+            font-style: italic;
+            font-size: 1.1rem;
         }
         
         .password-section {
             text-align: center;
-            margin: 30px 0;
+            margin: 40px 0;
+            padding: 20px;
+            background: rgba(29, 22, 17, 0.7);
+            border-radius: 8px;
+            max-width: 500px;
+            margin: 40px auto;
+        }
+        
+        .password-section h2 {
+            margin-bottom: 20px;
+            color: var(--wow-gold);
         }
         
         .password-section input {
-            padding: 10px;
+            padding: 12px;
             font-size: 16px;
             background: #2c241f;
             border: 1px solid #846b4f;
             color: var(--wow-light);
-            width: 200px;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto 15px;
+            border-radius: 4px;
+            text-align: center;
         }
         
         .password-section button {
-            background: #3d2c1d;
+            background: linear-gradient(to bottom, #5d4a2e, #3d2c1d);
             color: var(--wow-gold);
             border: 1px solid #846b4f;
-            padding: 10px 15px;
+            padding: 12px 25px;
             cursor: pointer;
             font-weight: bold;
+            font-size: 1.1rem;
+            border-radius: 4px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .password-section button:hover {
+            background: linear-gradient(to bottom, #6d5a3e, #4d3c2d);
+            border-color: var(--wow-gold);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
         
         .calendar-content {
             display: none;
         }
         
-        .event-form {
-            background: #1a1714;
-            padding: 20px;
-            border: 1px solid var(--wow-gold);
-            border-radius: 4px;
-            margin-bottom: 30px;
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
         }
         
-        .event-form input, .event-form select {
+        .faction-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .faction-btn {
+            background: #2c241f;
+            border: 1px solid #555;
+            padding: 8px 15px;
+            color: var(--wow-light);
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        
+        .faction-btn.active {
+            border-color: var(--wow-gold);
+            background: rgba(200, 170, 110, 0.2);
+        }
+        
+        .faction-btn.horde.active {
+            border-color: #cc0000;
+            background: rgba(204, 0, 0, 0.2);
+        }
+        
+        .faction-btn.alliance.active {
+            border-color: #0e86ca;
+            background: rgba(14, 134, 202, 0.2);
+        }
+        
+        .calendar-header h2 {
+            color: var(--wow-gold);
+            font-size: 1.8rem;
+        }
+        
+        .calendar-tools {
+            display: flex;
+            gap: 15px;
+            margin-left: auto;
+        }
+        
+        .calendar-view {
+            display: flex;
+            gap: 25px;
+        }
+        
+        .event-form-section {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .events-section {
+            flex: 2;
+        }
+        
+        .event-form {
+            background: rgba(29, 22, 17, 0.7);
+            padding: 25px;
+            border: 1px solid var(--wow-gold);
+            border-radius: 8px;
+            margin-bottom: 30px;
+            position: sticky;
+            top: 20px;
+        }
+        
+        .event-form h3 {
+            color: var(--wow-gold);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid #846b4f;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #a59263;
+            font-weight: bold;
+        }
+        
+        .form-group input, 
+        .form-group select,
+        .form-group textarea {
             width: 100%;
-            padding: 8px;
-            margin-bottom: 15px;
+            padding: 12px;
             background: #2c241f;
             border: 1px solid #846b4f;
             color: var(--wow-light);
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
         }
         
         .btn {
-            background: #3d2c1d;
+            background: linear-gradient(to bottom, #5d4a2e, #3d2c1d);
             color: var(--wow-gold);
             border: 1px solid #846b4f;
-            padding: 8px 15px;
+            padding: 12px 20px;
             text-decoration: none;
-            border-radius: 3px;
+            border-radius: 4px;
             font-weight: bold;
             cursor: pointer;
+            display: inline-block;
+            transition: all 0.3s;
+            text-align: center;
+            width: 100%;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+        }
+        
+        .btn:hover {
+            background: linear-gradient(to bottom, #6d5a3e, #4d3c2d);
+            border-color: var(--wow-gold);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn-secondary {
+            background: rgba(58, 46, 35, 0.5);
+        }
+        
+        .events-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #846b4f;
+        }
+        
+        .events-header h3 {
+            color: var(--wow-gold);
+            font-size: 1.5rem;
+        }
+        
+        .event-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
         }
         
         .event-card {
-            background: linear-gradient(to right, #1a1714, #2c241f);
+            background: linear-gradient(to bottom, #1a1714, #2c241f);
             border: 1px solid var(--wow-gold);
-            border-radius: 4px;
-            padding: 15px;
-            margin-bottom: 15px;
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        .event-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            border-color: #a59263;
         }
         
         .event-header {
             display: flex;
             justify-content: space-between;
+            align-items: flex-start;
             border-bottom: 1px solid #444;
-            padding-bottom: 8px;
-            margin-bottom: 10px;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .dungeon-icon {
+            width: 60px;
+            height: 60px;
+            background: #2c241f;
+            border: 1px solid #846b4f;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: var(--wow-gold);
+        }
+        
+        .event-info {
+            flex: 1;
+            padding-left: 15px;
+        }
+        
+        .event-info h4 {
+            color: var(--wow-gold);
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+        }
+        
+        .event-info .dungeon-level {
+            color: #a59263;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
         }
         
         .event-date {
             color: #a59263;
             font-weight: bold;
+            font-size: 0.9rem;
+            text-align: right;
+            min-width: 120px;
+        }
+        
+        .event-details {
+            margin-bottom: 20px;
+        }
+        
+        .event-details p {
+            margin-bottom: 10px;
+            display: flex;
+        }
+        
+        .event-details strong {
+            color: #a59263;
+            min-width: 120px;
+            display: inline-block;
+        }
+        
+        .signups {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #846b4f;
+        }
+        
+        .signups h5 {
+            color: var(--wow-gold);
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .signup-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .signup-form input {
+            flex: 1;
+            padding: 8px;
+            background: #2c241f;
+            border: 1px solid #846b4f;
+            color: var(--wow-light);
+            border-radius: 4px;
+        }
+        
+        .signup-form button {
+            background: #3d2c1d;
+            color: var(--wow-gold);
+            border: 1px solid #846b4f;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .signup-list {
+            margin-top: 10px;
+        }
+        
+        .signup-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            background: rgba(58, 46, 35, 0.3);
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+        
+        .signup-item .player {
+            color: var(--wow-blue);
+        }
+        
+        .signup-item .loot {
+            color: var(--wow-purple);
+            font-style: italic;
+        }
+        
+        .delete-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #cc0000;
+            cursor: pointer;
+            font-size: 1.2rem;
         }
         
         footer {
-            margin-top: 30px;
+            margin-top: 40px;
             text-align: center;
             font-style: italic;
-            color: var(--wow-gold);
+            color: #a59263;
+            padding-top: 20px;
+            border-top: 1px solid #846b4f;
+            width: 100%;
+        }
+        
+        .no-events {
+            text-align: center;
+            padding: 40px;
+            color: #a59263;
+            font-style: italic;
+            grid-column: 1 / -1;
+        }
+        
+        .event-card.raid {
+            border-color: #cc0000;
+        }
+        
+        .event-card.raid .dungeon-icon {
+            color: #cc0000;
+            border-color: #cc0000;
+        }
+        
+        .event-card.dungeon {
+            border-color: var(--wow-blue);
+        }
+        
+        .event-card.dungeon .dungeon-icon {
+            color: var(--wow-blue);
+            border-color: var(--wow-blue);
+        }
+        
+        .event-card.pvp {
+            border-color: var(--wow-purple);
+        }
+        
+        .event-card.pvp .dungeon-icon {
+            color: var(--wow-purple);
+            border-color: var(--wow-purple);
+        }
+        
+        .event-card.questing {
+            border-color: var(--wow-green);
+        }
+        
+        .event-card.questing .dungeon-icon {
+            color: var(--wow-green);
+            border-color: var(--wow-green);
         }
         
         /* Error message style */
@@ -131,15 +500,34 @@
             margin-top: 10px;
             display: none;
         }
+        
+        /* Responsive design */
+        @media (max-width: 900px) {
+            .calendar-view {
+                flex-direction: column;
+            }
+            
+            .event-form-section {
+                width: 100%;
+            }
+            
+            .event-list {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
+            <div class="logo">
+                <i class="fa-solid fa-calendar-days"></i>
+            </div>
             <h1>WoW Classic Guild Calendar</h1>
+            <p class="subtitle">Schedule your dungeon runs and raids with your guild</p>
         </header>
         
-        <div class="password-section">
+        <div class="password-section" id="passwordSection">
             <h2>Enter Guild Password</h2>
             <input type="password" id="password" placeholder="Shared guild password">
             <button onclick="login()">Enter Calendar</button>
@@ -147,34 +535,329 @@
         </div>
         
         <div class="calendar-content" id="calendarContent">
-            <div class="event-form">
-                <h2>Schedule Dungeon Run</h2>
-                <input type="text" id="dungeon" placeholder="Dungeon (e.g., Blackrock Depths)" required>
-                <input type="text" id="loot" placeholder="Loot Target (e.g., Ironfoe)">
-                <input type="text" id="player" placeholder="Your Character Name" required>
-                <input type="datetime-local" id="eventTime" required>
-                <button class="btn" onclick="addEvent()">Add to Calendar</button>
+            <div class="calendar-header">
+                <h2>Guild Event Calendar</h2>
+                <div class="faction-buttons">
+                    <button class="faction-btn alliance active">
+                        <i class="fa-solid fa-lion"></i> Alliance
+                    </button>
+                    <button class="faction-btn horde">
+                        <i class="fa-solid fa-wolf-pack-battalion"></i> Horde
+                    </button>
+                </div>
+                <div class="calendar-tools">
+                    <button class="btn btn-secondary" id="refreshBtn">
+                        <i class="fa-solid fa-rotate"></i> Refresh
+                    </button>
+                </div>
             </div>
             
-            <h2>Upcoming Events</h2>
-            <div id="eventsList"></div>
+            <div class="calendar-view">
+                <div class="event-form-section">
+                    <div class="event-form">
+                        <h3>Schedule New Event</h3>
+                        
+                        <div class="form-group">
+                            <label for="eventType">Event Type</label>
+                            <select id="eventType">
+                                <option value="dungeon">Dungeon Run</option>
+                                <option value="raid">Raid</option>
+                                <option value="pvp">PvP Event</option>
+                                <option value="questing">Group Questing</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="dungeon">Dungeon/Raid</label>
+                            <select id="dungeon">
+                                <option value="">Select a dungeon...</option>
+                                <!-- Dungeons will be populated by JavaScript -->
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="player">Your Character</label>
+                            <input type="text" id="player" placeholder="Character name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="loot">Loot Target</label>
+                            <input type="text" id="loot" placeholder="Item name (start typing)" list="lootSuggestions">
+                            <datalist id="lootSuggestions">
+                                <!-- Loot suggestions will be populated by JavaScript -->
+                            </datalist>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="eventTime">Date & Time</label>
+                            <input type="datetime-local" id="eventTime" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="notes">Notes (optional)</label>
+                            <textarea id="notes" placeholder="Additional information..."></textarea>
+                        </div>
+                        
+                        <button class="btn" onclick="addEvent()">
+                            <i class="fa-solid fa-calendar-plus"></i> Schedule Event
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="events-section">
+                    <div class="events-header">
+                        <h3>Upcoming Events</h3>
+                        <div class="events-filter">
+                            <select id="eventFilter">
+                                <option value="all">All Events</option>
+                                <option value="dungeon">Dungeons</option>
+                                <option value="raid">Raids</option>
+                                <option value="pvp">PvP</option>
+                                <option value="questing">Questing</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="event-list" id="eventsList">
+                        <!-- Events will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
         </div>
         
         <footer>
-            <p>For the Horde! • Events saved in your browser</p>
+            <p>For the Alliance! • Events saved in your browser • WoW Classic Guild Calendar</p>
         </footer>
     </div>
     
     <script>
         // ========= CONFIGURATION =========
         // SET YOUR PASSWORD HERE
-        const GUILD_PASSWORD = "vbk!FYK7fac8yew";
+        const GUILD_PASSWORD = "wow123";
         // =================================
         
+        // Dungeons data with levels and loot suggestions
+        const DUNGEONS = [
+            { 
+                name: "Ragefire Chasm", 
+                level: "13-18", 
+                loot: ["Robes of the Shadowcaster", "Smite's Reaver", "Face Smasher"] 
+            },
+            { 
+                name: "Wailing Caverns", 
+                level: "17-24", 
+                loot: ["Deviate Scale Belt", "Serpent's Shoulders", "Glowing Lizardscale Cloak"] 
+            },
+            { 
+                name: "The Deadmines", 
+                level: "18-23", 
+                loot: ["Cookie's Tenderizer", "Emil's Brand", "Defias Leather Set"] 
+            },
+            { 
+                name: "Shadowfang Keep", 
+                level: "22-30", 
+                loot: ["Assassin's Blade", "Robes of Arugal", "Shadowfang"] 
+            },
+            { 
+                name: "Blackfathom Deeps", 
+                level: "24-32", 
+                loot: ["Staff of the Friar", "Twilight Cowl", "Glimmering Mail Greaves"] 
+            },
+            { 
+                name: "The Stockade", 
+                level: "24-32", 
+                loot: ["Prison Shank", "Riot Stick", "Crimson Silk Cloak"] 
+            },
+            { 
+                name: "Gnomeregan", 
+                level: "29-38", 
+                loot: ["Electromagnetic Gigaflux Reactivator", "Manual Crowd Pummeler", "Gnomish Harm Prevention Belt"] 
+            },
+            { 
+                name: "Razorfen Kraul", 
+                level: "30-40", 
+                loot: ["Razorfen Blade", "Quillward Harness", "Warlord's Cloak"] 
+            },
+            { 
+                name: "Razorfen Downs", 
+                level: "35-40", 
+                loot: ["Crypt Demon Bracers", "Ribsplitter", "Deathmage Sash"] 
+            },
+            { 
+                name: "Scarlet Monastery", 
+                level: "34-45", 
+                loot: ["Whitemane's Chapeau", "Triune Amulet", "Scarlet Chestpiece"] 
+            },
+            { 
+                name: "Uldaman", 
+                level: "41-51", 
+                loot: ["The Shoveler", "Archaeologist's Quarry Boots", "Spirewind Fetter"] 
+            },
+            { 
+                name: "Zul'Farrak", 
+                level: "44-54", 
+                loot: ["Sandstrider's Mark", "Sul'thraze the Lasher", "Zum'rah's Vexing Cane"] 
+            },
+            { 
+                name: "Maraudon", 
+                level: "46-55", 
+                loot: ["Amulet of Spirits", "Blackstone Ring", "Crystal Adorned Crown"] 
+            },
+            { 
+                name: "Temple of Atal'Hakkar", 
+                level: "50-60", 
+                loot: ["Atal'ai Spaulders", "Bloodlord's Defender", "Jade Inlaid Vestments"] 
+            },
+            { 
+                name: "Blackrock Depths", 
+                level: "52-60", 
+                loot: ["Ironfoe", "Hand of Justice", "Dark Iron Pulverizer"] 
+            },
+            { 
+                name: "Lower Blackrock Spire", 
+                level: "55-60", 
+                loot: ["Felstriker", "Dal'Rend's Sacred Charge", "Dal'Rend's Tribal Guardian"] 
+            },
+            { 
+                name: "Upper Blackrock Spire", 
+                level: "55-60", 
+                loot: ["Draconian Deflector", "Dragon's Call", "Shadowcraft Cap"] 
+            },
+            { 
+                name: "Dire Maul", 
+                level: "55-60", 
+                loot: ["Helm of the Great Chief", "Libram of Rapidity", "Stoneskin Gargoyle Cape"] 
+            },
+            { 
+                name: "Stratholme", 
+                level: "58-60", 
+                loot: ["Runeblade of Baron Rivendare", "Bracers of the Eclipse", "Baron's Scepter"] 
+            },
+            { 
+                name: "Scholomance", 
+                level: "58-60", 
+                loot: ["Bonecreeper Stylus", "Skullflame Shield", "Bloodmail Regalia"] 
+            }
+        ];
+        
+        // Raids data
+        const RAIDS = [
+            { 
+                name: "Molten Core", 
+                level: "60", 
+                loot: ["Sulfuras, Hand of Ragnaros", "Choker of Enlightenment", "Nemesis Leggings"] 
+            },
+            { 
+                name: "Blackwing Lair", 
+                level: "60", 
+                loot: ["Ashkandi, Greatsword of the Brotherhood", "Neltharion's Tear", "Maladath, Runed Blade of the Black Flight"] 
+            },
+            { 
+                name: "Onyxia's Lair", 
+                level: "60", 
+                loot: ["Onyxia Hide Backpack", "Vis'kag the Bloodletter", "Helm of Wrath"] 
+            },
+            { 
+                name: "Zul'Gurub", 
+                level: "60", 
+                loot: ["Zin'rokh, Destroyer of Worlds", "Primal Hakkari Kossack", "Jin'do's Judgement"] 
+            },
+            { 
+                name: "Ruins of Ahn'Qiraj", 
+                level: "60", 
+                loot: ["Barb of the Sand Reaver", "Hive Tunneler's Boots", "Angelista's Grasp"] 
+            },
+            { 
+                name: "Temple of Ahn'Qiraj", 
+                level: "60", 
+                loot: ["Kalidem", "Dark Edge of Insanity", "Ring of the Godslayer"] 
+            }
+        ];
+        
+        // Initialize the application
+        function initApp() {
+            populateDungeonDropdown();
+            setupEventListeners();
+            
+            // Set default datetime to next hour
+            const now = new Date();
+            now.setHours(now.getHours() + 1);
+            now.setMinutes(0);
+            document.getElementById('eventTime').value = formatDateTime(now);
+        }
+        
+        // Populate dungeon dropdown
+        function populateDungeonDropdown() {
+            const dungeonSelect = document.getElementById('dungeon');
+            
+            // Add dungeons
+            DUNGEONS.forEach(dungeon => {
+                const option = document.createElement('option');
+                option.value = dungeon.name;
+                option.textContent = `${dungeon.name} (${dungeon.level})`;
+                dungeonSelect.appendChild(option);
+            });
+            
+            // Add raids
+            const raidGroup = document.createElement('optgroup');
+            raidGroup.label = "Raids";
+            RAIDS.forEach(raid => {
+                const option = document.createElement('option');
+                option.value = raid.name;
+                option.textContent = `${raid.name} (${raid.level})`;
+                raidGroup.appendChild(option);
+            });
+            dungeonSelect.appendChild(raidGroup);
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            document.getElementById('dungeon').addEventListener('change', updateLootSuggestions);
+            document.getElementById('refreshBtn').addEventListener('click', loadEvents);
+            document.getElementById('eventFilter').addEventListener('change', loadEvents);
+            document.getElementById('password').addEventListener('keypress', function(e) {
+                if(e.key === 'Enter') login();
+            });
+            
+            // Faction buttons
+            document.querySelectorAll('.faction-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.faction-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        }
+        
+        // Update loot suggestions based on selected dungeon
+        function updateLootSuggestions() {
+            const dungeonName = document.getElementById('dungeon').value;
+            const lootInput = document.getElementById('loot');
+            const lootSuggestions = document.getElementById('lootSuggestions');
+            
+            // Clear existing suggestions
+            lootSuggestions.innerHTML = '';
+            
+            // Find selected dungeon
+            let selectedDungeon = DUNGEONS.find(d => d.name === dungeonName);
+            if (!selectedDungeon) {
+                selectedDungeon = RAIDS.find(r => r.name === dungeonName);
+            }
+            
+            // Add new suggestions
+            if (selectedDungeon && selectedDungeon.loot) {
+                selectedDungeon.loot.forEach(loot => {
+                    const option = document.createElement('option');
+                    option.value = loot;
+                    lootSuggestions.appendChild(option);
+                });
+            }
+        }
+        
+        // Login function
         function login() {
             const password = document.getElementById('password').value;
             if(password === GUILD_PASSWORD) {
-                document.querySelector('.password-section').style.display = 'none';
+                document.getElementById('passwordSection').style.display = 'none';
                 document.getElementById('calendarContent').style.display = 'block';
                 loadEvents();
             } else {
@@ -182,25 +865,42 @@
             }
         }
         
+        // Add new event
         function addEvent() {
+            const eventType = document.getElementById('eventType').value;
             const dungeon = document.getElementById('dungeon').value;
-            const loot = document.getElementById('loot').value;
             const player = document.getElementById('player').value;
+            const loot = document.getElementById('loot').value;
             const eventTime = document.getElementById('eventTime').value;
+            const notes = document.getElementById('notes').value;
             
             if(!dungeon || !player || !eventTime) {
                 alert("Please fill all required fields!");
                 return;
             }
             
+            // Find dungeon level
+            let dungeonLevel = "1-60";
+            let foundDungeon = DUNGEONS.find(d => d.name === dungeon);
+            if (!foundDungeon) {
+                foundDungeon = RAIDS.find(r => r.name === dungeon);
+            }
+            if (foundDungeon) {
+                dungeonLevel = foundDungeon.level;
+            }
+            
             // Create event object
             const event = {
                 id: Date.now(), // Unique ID
+                type: eventType,
                 dungeon: dungeon,
-                loot: loot || "Any upgrades",
+                level: dungeonLevel,
                 player: player,
+                loot: loot || "Any upgrades",
                 time: eventTime,
-                timestamp: new Date(eventTime).getTime()
+                timestamp: new Date(eventTime).getTime(),
+                notes: notes,
+                signups: []
             };
             
             // Get existing events
@@ -221,53 +921,143 @@
             
             // Clear form
             document.getElementById('dungeon').value = '';
-            document.getElementById('loot').value = '';
             document.getElementById('player').value = '';
-            document.getElementById('eventTime').value = '';
+            document.getElementById('loot').value = '';
+            document.getElementById('notes').value = '';
+            
+            // Set next hour as default
+            const now = new Date();
+            now.setHours(now.getHours() + 1);
+            now.setMinutes(0);
+            document.getElementById('eventTime').value = formatDateTime(now);
+            
+            alert("Event scheduled successfully!");
         }
         
+        // Load events from storage
         function loadEvents() {
             const storedEvents = localStorage.getItem('wowEvents');
             const eventsList = document.getElementById('eventsList');
+            const eventFilter = document.getElementById('eventFilter').value;
+            
+            eventsList.innerHTML = '';
             
             if(!storedEvents) {
-                eventsList.innerHTML = '<p>No events scheduled yet!</p>';
+                eventsList.innerHTML = '<div class="no-events"><i class="fa-solid fa-calendar-xmark"></i><h4>No events scheduled yet!</h4><p>Schedule your first dungeon run above</p></div>';
                 return;
             }
             
             const events = JSON.parse(storedEvents);
             
-            // Sort events by date
-            events.sort((a, b) => a.timestamp - b.timestamp);
+            // Filter events
+            const filteredEvents = eventFilter === 'all' 
+                ? events 
+                : events.filter(e => e.type === eventFilter);
             
-            if(events.length === 0) {
-                eventsList.innerHTML = '<p>No events scheduled yet!</p>';
+            // Sort events by date
+            filteredEvents.sort((a, b) => a.timestamp - b.timestamp);
+            
+            if(filteredEvents.length === 0) {
+                eventsList.innerHTML = '<div class="no-events"><i class="fa-solid fa-calendar-xmark"></i><h4>No events of this type</h4><p>Try changing the filter or schedule a new event</p></div>';
                 return;
             }
             
-            // Clear existing events
-            eventsList.innerHTML = '';
-            
-            // Format and display events
-            events.forEach(event => {
+            // Display events
+            filteredEvents.forEach(event => {
                 const eventDate = new Date(event.time);
                 const formattedDate = eventDate.toLocaleString();
                 
                 const eventCard = document.createElement('div');
-                eventCard.className = 'event-card';
+                eventCard.className = `event-card ${event.type}`;
                 eventCard.innerHTML = `
+                    <button class="delete-btn" onclick="deleteEvent(${event.id})">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
                     <div class="event-header">
-                        <h3>${event.dungeon}</h3>
-                        <span class="event-date">${formattedDate}</span>
+                        <div class="dungeon-icon">
+                            <i class="fa-solid ${getEventIcon(event.type)}"></i>
+                        </div>
+                        <div class="event-info">
+                            <h4>${event.dungeon}</h4>
+                            <div class="dungeon-level">Level: ${event.level}</div>
+                            <div class="event-type">${getEventTypeName(event.type)}</div>
+                        </div>
+                        <div class="event-date">${formattedDate}</div>
                     </div>
-                    <p><strong>Loot Target:</strong> ${event.loot}</p>
-                    <p><strong>Organizer:</strong> ${event.player}</p>
-                    <button class="btn" onclick="deleteEvent(${event.id})" style="margin-top:10px;">Remove</button>
+                    <div class="event-details">
+                        <p><strong>Organizer:</strong> <span class="player">${event.player}</span></p>
+                        <p><strong>Loot Target:</strong> <span class="loot">${event.loot}</span></p>
+                        ${event.notes ? `<p><strong>Notes:</strong> ${event.notes}</p>` : ''}
+                    </div>
+                    <div class="signups">
+                        <h5>Signups (${event.signups.length})</h5>
+                        <div class="signup-list" id="signups-${event.id}">
+                            ${renderSignups(event.signups)}
+                        </div>
+                        <div class="signup-form">
+                            <input type="text" id="signup-player-${event.id}" placeholder="Your character">
+                            <input type="text" id="signup-loot-${event.id}" placeholder="Loot target">
+                            <button onclick="addSignup(${event.id})"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
                 `;
                 eventsList.appendChild(eventCard);
             });
         }
         
+        // Render signups list
+        function renderSignups(signups) {
+            if (signups.length === 0) {
+                return '<p>No signups yet. Be the first!</p>';
+            }
+            
+            return signups.map(signup => `
+                <div class="signup-item">
+                    <span class="player">${signup.player}</span>
+                    <span class="loot">${signup.loot || 'Any loot'}</span>
+                </div>
+            `).join('');
+        }
+        
+        // Add signup to an event
+        function addSignup(eventId) {
+            const playerInput = document.getElementById(`signup-player-${eventId}`);
+            const lootInput = document.getElementById(`signup-loot-${eventId}`);
+            const player = playerInput.value.trim();
+            const loot = lootInput.value.trim();
+            
+            if (!player) {
+                alert("Please enter your character name!");
+                return;
+            }
+            
+            const storedEvents = localStorage.getItem('wowEvents');
+            if (!storedEvents) return;
+            
+            const events = JSON.parse(storedEvents);
+            const eventIndex = events.findIndex(e => e.id === eventId);
+            
+            if (eventIndex === -1) return;
+            
+            // Add signup
+            events[eventIndex].signups.push({
+                player: player,
+                loot: loot || "Any loot"
+            });
+            
+            // Save back to storage
+            localStorage.setItem('wowEvents', JSON.stringify(events));
+            
+            // Refresh signups list
+            const signupList = document.getElementById(`signups-${eventId}`);
+            signupList.innerHTML = renderSignups(events[eventIndex].signups);
+            
+            // Clear inputs
+            playerInput.value = '';
+            lootInput.value = '';
+        }
+        
+        // Delete event
         function deleteEvent(id) {
             if(!confirm("Are you sure you want to remove this event?")) return;
             
@@ -280,10 +1070,37 @@
             }
         }
         
-        // Initialize page
-        document.getElementById('password').addEventListener('keypress', function(e) {
-            if(e.key === 'Enter') login();
-        });
+        // Helper functions
+        function getEventIcon(type) {
+            switch(type) {
+                case 'raid': return 'fa-dragon';
+                case 'pvp': return 'fa-crosshairs';
+                case 'questing': return 'fa-map';
+                default: return 'fa-dungeon';
+            }
+        }
+        
+        function getEventTypeName(type) {
+            switch(type) {
+                case 'raid': return 'Raid';
+                case 'pvp': return 'PvP Event';
+                case 'questing': return 'Group Questing';
+                default: return 'Dungeon Run';
+            }
+        }
+        
+        function formatDateTime(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+        
+        // Initialize the app when page loads
+        window.onload = initApp;
     </script>
 </body>
 </html>
