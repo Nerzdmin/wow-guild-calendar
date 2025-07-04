@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WoW Guild Calendar</title>
+    <style>
+        /* WoW Classic Theme */
+        :root {
+            --wow-gold: #c8aa6e;
+            --wow-brown: #372d29;
+            --wow-dark: #0e0b0b;
+            --wow-light: #e9dec3;
+        }
+        
+        body {
+            background: url('https://i.imgur.com/Y4YvQa2.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Times New Roman', serif;
+            color: var(--wow-light);
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: rgba(14, 11, 11, 0.85);
+            border: 2px solid var(--wow-gold);
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+        }
+        
+        header {
+            text-align: center;
+            border-bottom: 1px solid var(--wow-gold);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        
+        header h1 {
+            color: var(--wow-gold);
+            text-shadow: 2px 2px 4px #000;
+        }
+        
+        .password-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .password-section input {
+            padding: 10px;
+            font-size: 16px;
+            background: #2c241f;
+            border: 1px solid #846b4f;
+            color: var(--wow-light);
+            width: 200px;
+        }
+        
+        .password-section button {
+            background: #3d2c1d;
+            color: var(--wow-gold);
+            border: 1px solid #846b4f;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .calendar-content {
+            display: none;
+        }
+        
+        .event-form {
+            background: #1a1714;
+            padding: 20px;
+            border: 1px solid var(--wow-gold);
+            border-radius: 4px;
+            margin-bottom: 30px;
+        }
+        
+        .event-form input, .event-form select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            background: #2c241f;
+            border: 1px solid #846b4f;
+            color: var(--wow-light);
+        }
+        
+        .btn {
+            background: #3d2c1d;
+            color: var(--wow-gold);
+            border: 1px solid #846b4f;
+            padding: 8px 15px;
+            text-decoration: none;
+            border-radius: 3px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .event-card {
+            background: linear-gradient(to right, #1a1714, #2c241f);
+            border: 1px solid var(--wow-gold);
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .event-header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #444;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .event-date {
+            color: #a59263;
+            font-weight: bold;
+        }
+        
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            font-style: italic;
+            color: var(--wow-gold);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>WoW Classic Guild Calendar</h1>
+        </header>
+        
+        <div class="password-section">
+            <h2>Enter Guild Password</h2>
+            <input type="password" id="password" placeholder="Shared guild password">
+            <button onclick="login()">Enter Calendar</button>
+        </div>
+        
+        <div class="calendar-content" id="calendarContent">
+            <div class="event-form">
+                <h2>Schedule Dungeon Run</h2>
+                <input type="text" id="dungeon" placeholder="Dungeon (e.g., Blackrock Depths)" required>
+                <input type="text" id="loot" placeholder="Loot Target (e.g., Ironfoe)">
+                <input type="text" id="player" placeholder="Your Character Name" required>
+                <input type="datetime-local" id="eventTime" required>
+                <button class="btn" onclick="addEvent()">Add to Calendar</button>
+            </div>
+            
+            <h2>Upcoming Events</h2>
+            <div id="eventsList"></div>
+        </div>
+        
+        <footer>
+            <p>For the Horde! • Events saved in your browser</p>
+        </footer>
+    </div>
+    
+    <script>
+        // SET YOUR PASSWORD HERE
+        const GUILD_PASSWORD = "wow123";
+        
+        function login() {
+            const password = document.getElementById('password').value;
+            if(password === GUILD_PASSWORD) {
+                document.querySelector('.password-section').style.display = 'none';
+                document.getElementById('calendarContent').style.display = 'block';
+                loadEvents();
+            } else {
+                alert("Wrong password! Ask your Guild Master for the correct one.");
+            }
+        }
+        
+        function addEvent() {
+            const dungeon = document.getElementById('dungeon').value;
+            const loot = document.getElementById('loot').value;
+            const player = document.getElementById('player').value;
+            const eventTime = document.getElementById('eventTime').value;
+            
+            if(!dungeon || !player || !eventTime) {
+                alert("Please fill all required fields!");
+                return;
+            }
+            
+            const event = {
+                dungeon,
+                loot: loot || "Any upgrades",
+                player,
+                time: new Date(eventTime).toLocaleString()
+            };
+            
+            // Save to local storage
+            const events = JSON.parse(localStorage.getItem('wowEvents') || [];
+            events.push(event);
+            localStorage.setItem('wowEvents', JSON.stringify(events));
+            
+            // Refresh events list
+            loadEvents();
+            
+            // Clear form
+            document.getElementById('dungeon').value = '';
+            document.getElementById('loot').value = '';
+            document.getElementById('player').value = '';
+            document.getElementById('eventTime').value = '';
+        }
+        
+        function loadEvents() {
+            const events = JSON.parse(localStorage.getItem('wowEvents')) || [];
+            const eventsList = document.getElementById('eventsList');
+            
+            if(events.length === 0) {
+                eventsList.innerHTML = '<p>No events scheduled yet!</p>';
+                return;
+            }
+            
+            eventsList.innerHTML = '';
+            
+            events.forEach(event => {
+                const eventCard = document.createElement('div');
+                eventCard.className = 'event-card';
+                eventCard.innerHTML = `
+                    <div class="event-header">
+                        <h3>${event.dungeon}</h3>
+                        <span class="event-date">${event.time}</span>
+                    </div>
+                    <p><strong>Loot Target:</strong> ${event.loot}</p>
+                    <p><strong>Organizer:</strong> ${event.player}</p>
+                `;
+                eventsList.appendChild(eventCard);
+            });
+        }
+    </script>
+</body>
+</html>
