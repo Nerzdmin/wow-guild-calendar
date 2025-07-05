@@ -141,39 +141,6 @@
             gap: 15px;
         }
         
-        .faction-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .faction-btn {
-            background: #2c241f;
-            border: 1px solid #555;
-            padding: 8px 15px;
-            color: var(--wow-light);
-            cursor: pointer;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s;
-        }
-        
-        .faction-btn.active {
-            border-color: var(--wow-gold);
-            background: rgba(200, 170, 110, 0.2);
-        }
-        
-        .faction-btn.horde.active {
-            border-color: #cc0000;
-            background: rgba(204, 0, 0, 0.2);
-        }
-        
-        .faction-btn.alliance.active {
-            border-color: #0e86ca;
-            background: rgba(14, 134, 202, 0.2);
-        }
-        
         .calendar-header h2 {
             color: var(--wow-gold);
             font-size: 1.8rem;
@@ -537,14 +504,6 @@
         <div class="calendar-content" id="calendarContent">
             <div class="calendar-header">
                 <h2>Guild Event Calendar</h2>
-                <div class="faction-buttons">
-                    <button class="faction-btn alliance active">
-                        <i class="fa-solid fa-lion"></i> Alliance
-                    </button>
-                    <button class="faction-btn horde">
-                        <i class="fa-solid fa-wolf-pack-battalion"></i> Horde
-                    </button>
-                </div>
                 <div class="calendar-tools">
                     <button class="btn btn-secondary" id="refreshBtn">
                         <i class="fa-solid fa-rotate"></i> Refresh
@@ -598,7 +557,7 @@
                             <textarea id="notes" placeholder="Additional information..."></textarea>
                         </div>
                         
-                        <button class="btn" onclick="addEvent()">
+                        <button class="btn" id="scheduleBtn">
                             <i class="fa-solid fa-calendar-plus"></i> Schedule Event
                         </button>
                     </div>
@@ -626,7 +585,7 @@
         </div>
         
         <footer>
-            <p>For the Alliance! • Events saved in your browser • WoW Classic Guild Calendar</p>
+            <p>WoW Classic Guild Calendar • Events saved in your browser</p>
         </footer>
     </div>
     
@@ -819,13 +778,8 @@
                 if(e.key === 'Enter') login();
             });
             
-            // Faction buttons
-            document.querySelectorAll('.faction-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.faction-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                });
-            });
+            // Schedule button event listener
+            document.getElementById('scheduleBtn').addEventListener('click', addEvent);
         }
         
         // Update loot suggestions based on selected dungeon
