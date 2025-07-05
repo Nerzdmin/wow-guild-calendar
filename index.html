@@ -468,6 +468,23 @@
             display: none;
         }
         
+        /* Loading spinner */
+        .spinner {
+            border: 4px solid rgba(200, 170, 110, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid var(--wow-gold);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
         /* Responsive design */
         @media (max-width: 900px) {
             .calendar-view {
@@ -491,7 +508,7 @@
                 <i class="fa-solid fa-calendar-days"></i>
             </div>
             <h1>WoW Classic Guild Calendar</h1>
-            <p class="subtitle">Schedule your dungeon runs and raids with your guild</p>
+            <p class="subtitle">Shared Dungeon & Raid Scheduler</p>
         </header>
         
         <div class="password-section" id="passwordSection">
@@ -502,6 +519,8 @@
         </div>
         
         <div class="calendar-content" id="calendarContent">
+            <div class="spinner" id="loadingSpinner"></div>
+            
             <div class="calendar-header">
                 <h2>Guild Event Calendar</h2>
                 <div class="calendar-tools">
@@ -530,7 +549,7 @@
                             <label for="dungeon">Dungeon/Raid</label>
                             <select id="dungeon">
                                 <option value="">Select a dungeon...</option>
-                                <!-- Dungeons will be populated by JavaScript -->
+                                <!-- Dungeons populated by JavaScript -->
                             </select>
                         </div>
                         
@@ -543,7 +562,7 @@
                             <label for="loot">Loot Target</label>
                             <input type="text" id="loot" placeholder="Item name (start typing)" list="lootSuggestions">
                             <datalist id="lootSuggestions">
-                                <!-- Loot suggestions will be populated by JavaScript -->
+                                <!-- Loot suggestions populated by JavaScript -->
                             </datalist>
                         </div>
                         
@@ -578,159 +597,60 @@
                     </div>
                     
                     <div class="event-list" id="eventsList">
-                        <!-- Events will be populated by JavaScript -->
+                        <div class="no-events">
+                            <i class="fa-solid fa-spinner fa-spin"></i>
+                            <p>Loading events from database...</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         
         <footer>
-            <p>WoW Classic Guild Calendar • Events saved in your browser</p>
+            <p>WoW Classic Guild Calendar • JSON Server • Shared with all guild members</p>
         </footer>
     </div>
-    
+
     <script>
         // ========= CONFIGURATION =========
         // SET YOUR PASSWORD HERE
         const GUILD_PASSWORD = "wow123";
+        
+        // JSON Server endpoint (replace with your own)
+        const API_URL = "https://my-json-server.typicode.com/your-username/wow-calendar-db";
         // =================================
         
         // Dungeons data with levels and loot suggestions
         const DUNGEONS = [
-            { 
-                name: "Ragefire Chasm", 
-                level: "13-18", 
-                loot: ["Robes of the Shadowcaster", "Smite's Reaver", "Face Smasher"] 
-            },
-            { 
-                name: "Wailing Caverns", 
-                level: "17-24", 
-                loot: ["Deviate Scale Belt", "Serpent's Shoulders", "Glowing Lizardscale Cloak"] 
-            },
-            { 
-                name: "The Deadmines", 
-                level: "18-23", 
-                loot: ["Cookie's Tenderizer", "Emil's Brand", "Defias Leather Set"] 
-            },
-            { 
-                name: "Shadowfang Keep", 
-                level: "22-30", 
-                loot: ["Assassin's Blade", "Robes of Arugal", "Shadowfang"] 
-            },
-            { 
-                name: "Blackfathom Deeps", 
-                level: "24-32", 
-                loot: ["Staff of the Friar", "Twilight Cowl", "Glimmering Mail Greaves"] 
-            },
-            { 
-                name: "The Stockade", 
-                level: "24-32", 
-                loot: ["Prison Shank", "Riot Stick", "Crimson Silk Cloak"] 
-            },
-            { 
-                name: "Gnomeregan", 
-                level: "29-38", 
-                loot: ["Electromagnetic Gigaflux Reactivator", "Manual Crowd Pummeler", "Gnomish Harm Prevention Belt"] 
-            },
-            { 
-                name: "Razorfen Kraul", 
-                level: "30-40", 
-                loot: ["Razorfen Blade", "Quillward Harness", "Warlord's Cloak"] 
-            },
-            { 
-                name: "Razorfen Downs", 
-                level: "35-40", 
-                loot: ["Crypt Demon Bracers", "Ribsplitter", "Deathmage Sash"] 
-            },
-            { 
-                name: "Scarlet Monastery", 
-                level: "34-45", 
-                loot: ["Whitemane's Chapeau", "Triune Amulet", "Scarlet Chestpiece"] 
-            },
-            { 
-                name: "Uldaman", 
-                level: "41-51", 
-                loot: ["The Shoveler", "Archaeologist's Quarry Boots", "Spirewind Fetter"] 
-            },
-            { 
-                name: "Zul'Farrak", 
-                level: "44-54", 
-                loot: ["Sandstrider's Mark", "Sul'thraze the Lasher", "Zum'rah's Vexing Cane"] 
-            },
-            { 
-                name: "Maraudon", 
-                level: "46-55", 
-                loot: ["Amulet of Spirits", "Blackstone Ring", "Crystal Adorned Crown"] 
-            },
-            { 
-                name: "Temple of Atal'Hakkar", 
-                level: "50-60", 
-                loot: ["Atal'ai Spaulders", "Bloodlord's Defender", "Jade Inlaid Vestments"] 
-            },
-            { 
-                name: "Blackrock Depths", 
-                level: "52-60", 
-                loot: ["Ironfoe", "Hand of Justice", "Dark Iron Pulverizer"] 
-            },
-            { 
-                name: "Lower Blackrock Spire", 
-                level: "55-60", 
-                loot: ["Felstriker", "Dal'Rend's Sacred Charge", "Dal'Rend's Tribal Guardian"] 
-            },
-            { 
-                name: "Upper Blackrock Spire", 
-                level: "55-60", 
-                loot: ["Draconian Deflector", "Dragon's Call", "Shadowcraft Cap"] 
-            },
-            { 
-                name: "Dire Maul", 
-                level: "55-60", 
-                loot: ["Helm of the Great Chief", "Libram of Rapidity", "Stoneskin Gargoyle Cape"] 
-            },
-            { 
-                name: "Stratholme", 
-                level: "58-60", 
-                loot: ["Runeblade of Baron Rivendare", "Bracers of the Eclipse", "Baron's Scepter"] 
-            },
-            { 
-                name: "Scholomance", 
-                level: "58-60", 
-                loot: ["Bonecreeper Stylus", "Skullflame Shield", "Bloodmail Regalia"] 
-            }
+            { name: "Ragefire Chasm", level: "13-18", loot: ["Robes of the Shadowcaster", "Smite's Reaver", "Face Smasher"] },
+            { name: "Wailing Caverns", level: "17-24", loot: ["Deviate Scale Belt", "Serpent's Shoulders", "Glowing Lizardscale Cloak"] },
+            { name: "The Deadmines", level: "18-23", loot: ["Cookie's Tenderizer", "Emil's Brand", "Defias Leather Set"] },
+            { name: "Shadowfang Keep", level: "22-30", loot: ["Assassin's Blade", "Robes of Arugal", "Shadowfang"] },
+            { name: "Blackfathom Deeps", level: "24-32", loot: ["Staff of the Friar", "Twilight Cowl", "Glimmering Mail Greaves"] },
+            { name: "The Stockade", level: "24-32", loot: ["Prison Shank", "Riot Stick", "Crimson Silk Cloak"] },
+            { name: "Gnomeregan", level: "29-38", loot: ["Electromagnetic Gigaflux Reactivator", "Manual Crowd Pummeler", "Gnomish Harm Prevention Belt"] },
+            { name: "Razorfen Kraul", level: "30-40", loot: ["Razorfen Blade", "Quillward Harness", "Warlord's Cloak"] },
+            { name: "Razorfen Downs", level: "35-40", loot: ["Crypt Demon Bracers", "Ribsplitter", "Deathmage Sash"] },
+            { name: "Scarlet Monastery", level: "34-45", loot: ["Whitemane's Chapeau", "Triune Amulet", "Scarlet Chestpiece"] },
+            { name: "Uldaman", level: "41-51", loot: ["The Shoveler", "Archaeologist's Quarry Boots", "Spirewind Fetter"] },
+            { name: "Zul'Farrak", level: "44-54", loot: ["Sandstrider's Mark", "Sul'thraze the Lasher", "Zum'rah's Vexing Cane"] },
+            { name: "Maraudon", level: "46-55", loot: ["Amulet of Spirits", "Blackstone Ring", "Crystal Adorned Crown"] },
+            { name: "Temple of Atal'Hakkar", level: "50-60", loot: ["Atal'ai Spaulders", "Bloodlord's Defender", "Jade Inlaid Vestments"] },
+            { name: "Blackrock Depths", level: "52-60", loot: ["Ironfoe", "Hand of Justice", "Dark Iron Pulverizer"] },
+            { name: "Lower Blackrock Spire", level: "55-60", loot: ["Felstriker", "Dal'Rend's Sacred Charge", "Dal'Rend's Tribal Guardian"] },
+            { name: "Upper Blackrock Spire", level: "55-60", loot: ["Draconian Deflector", "Dragon's Call", "Shadowcraft Cap"] },
+            { name: "Dire Maul", level: "55-60", loot: ["Helm of the Great Chief", "Libram of Rapidity", "Stoneskin Gargoyle Cape"] },
+            { name: "Stratholme", level: "58-60", loot: ["Runeblade of Baron Rivendare", "Bracers of the Eclipse", "Baron's Scepter"] },
+            { name: "Scholomance", level: "58-60", loot: ["Bonecreeper Stylus", "Skullflame Shield", "Bloodmail Regalia"] }
         ];
         
-        // Raids data
         const RAIDS = [
-            { 
-                name: "Molten Core", 
-                level: "60", 
-                loot: ["Sulfuras, Hand of Ragnaros", "Choker of Enlightenment", "Nemesis Leggings"] 
-            },
-            { 
-                name: "Blackwing Lair", 
-                level: "60", 
-                loot: ["Ashkandi, Greatsword of the Brotherhood", "Neltharion's Tear", "Maladath, Runed Blade of the Black Flight"] 
-            },
-            { 
-                name: "Onyxia's Lair", 
-                level: "60", 
-                loot: ["Onyxia Hide Backpack", "Vis'kag the Bloodletter", "Helm of Wrath"] 
-            },
-            { 
-                name: "Zul'Gurub", 
-                level: "60", 
-                loot: ["Zin'rokh, Destroyer of Worlds", "Primal Hakkari Kossack", "Jin'do's Judgement"] 
-            },
-            { 
-                name: "Ruins of Ahn'Qiraj", 
-                level: "60", 
-                loot: ["Barb of the Sand Reaver", "Hive Tunneler's Boots", "Angelista's Grasp"] 
-            },
-            { 
-                name: "Temple of Ahn'Qiraj", 
-                level: "60", 
-                loot: ["Kalidem", "Dark Edge of Insanity", "Ring of the Godslayer"] 
-            }
+            { name: "Molten Core", level: "60", loot: ["Sulfuras, Hand of Ragnaros", "Choker of Enlightenment", "Nemesis Leggings"] },
+            { name: "Blackwing Lair", level: "60", loot: ["Ashkandi, Greatsword of the Brotherhood", "Neltharion's Tear", "Maladath, Runed Blade of the Black Flight"] },
+            { name: "Onyxia's Lair", level: "60", loot: ["Onyxia Hide Backpack", "Vis'kag the Bloodletter", "Helm of Wrath"] },
+            { name: "Zul'Gurub", level: "60", loot: ["Zin'rokh, Destroyer of Worlds", "Primal Hakkari Kossack", "Jin'do's Judgement"] },
+            { name: "Ruins of Ahn'Qiraj", level: "60", loot: ["Barb of the Sand Reaver", "Hive Tunneler's Boots", "Angelista's Grasp"] },
+            { name: "Temple of Ahn'Qiraj", level: "60", loot: ["Kalidem", "Dark Edge of Insanity", "Ring of the Godslayer"] }
         ];
         
         // Initialize the application
@@ -813,6 +733,7 @@
             if(password === GUILD_PASSWORD) {
                 document.getElementById('passwordSection').style.display = 'none';
                 document.getElementById('calendarContent').style.display = 'block';
+                document.getElementById('loadingSpinner').style.display = 'block';
                 loadEvents();
             } else {
                 document.getElementById('errorMessage').style.display = 'block';
@@ -820,7 +741,7 @@
         }
         
         // Add new event
-        function addEvent() {
+        async function addEvent() {
             const eventType = document.getElementById('eventType').value;
             const dungeon = document.getElementById('dungeon').value;
             const player = document.getElementById('player').value;
@@ -845,7 +766,6 @@
             
             // Create event object
             const event = {
-                id: Date.now(), // Unique ID
                 type: eventType,
                 dungeon: dungeon,
                 level: dungeonLevel,
@@ -857,106 +777,118 @@
                 signups: []
             };
             
-            // Get existing events
-            let events = [];
-            const storedEvents = localStorage.getItem('wowEvents');
-            if(storedEvents) {
-                events = JSON.parse(storedEvents);
+            try {
+                // Add event to database
+                const response = await fetch(`${API_URL}/events`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(event)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to add event');
+                }
+                
+                // Clear form
+                document.getElementById('dungeon').value = '';
+                document.getElementById('player').value = '';
+                document.getElementById('loot').value = '';
+                document.getElementById('notes').value = '';
+                
+                // Set next hour as default
+                const now = new Date();
+                now.setHours(now.getHours() + 1);
+                now.setMinutes(0);
+                document.getElementById('eventTime').value = formatDateTime(now);
+                
+                alert("Event scheduled successfully!");
+                loadEvents();
+            } catch (error) {
+                console.error("Error adding event: ", error);
+                alert("Error scheduling event. Please try again.");
             }
-            
-            // Add new event
-            events.push(event);
-            
-            // Save back to storage
-            localStorage.setItem('wowEvents', JSON.stringify(events));
-            
-            // Refresh events list
-            loadEvents();
-            
-            // Clear form
-            document.getElementById('dungeon').value = '';
-            document.getElementById('player').value = '';
-            document.getElementById('loot').value = '';
-            document.getElementById('notes').value = '';
-            
-            // Set next hour as default
-            const now = new Date();
-            now.setHours(now.getHours() + 1);
-            now.setMinutes(0);
-            document.getElementById('eventTime').value = formatDateTime(now);
-            
-            alert("Event scheduled successfully!");
         }
         
-        // Load events from storage
-        function loadEvents() {
-            const storedEvents = localStorage.getItem('wowEvents');
+        // Load events from database
+        async function loadEvents() {
             const eventsList = document.getElementById('eventsList');
             const eventFilter = document.getElementById('eventFilter').value;
             
-            eventsList.innerHTML = '';
+            eventsList.innerHTML = '<div class="no-events"><i class="fa-solid fa-spinner fa-spin"></i><p>Loading events from database...</p></div>';
+            document.getElementById('loadingSpinner').style.display = 'block';
             
-            if(!storedEvents) {
-                eventsList.innerHTML = '<div class="no-events"><i class="fa-solid fa-calendar-xmark"></i><h4>No events scheduled yet!</h4><p>Schedule your first dungeon run above</p></div>';
-                return;
-            }
-            
-            const events = JSON.parse(storedEvents);
-            
-            // Filter events
-            const filteredEvents = eventFilter === 'all' 
-                ? events 
-                : events.filter(e => e.type === eventFilter);
-            
-            // Sort events by date
-            filteredEvents.sort((a, b) => a.timestamp - b.timestamp);
-            
-            if(filteredEvents.length === 0) {
-                eventsList.innerHTML = '<div class="no-events"><i class="fa-solid fa-calendar-xmark"></i><h4>No events of this type</h4><p>Try changing the filter or schedule a new event</p></div>';
-                return;
-            }
-            
-            // Display events
-            filteredEvents.forEach(event => {
-                const eventDate = new Date(event.time);
-                const formattedDate = eventDate.toLocaleString();
+            try {
+                let url = `${API_URL}/events`;
+                if (eventFilter !== 'all') {
+                    url += `?type=${eventFilter}`;
+                }
                 
-                const eventCard = document.createElement('div');
-                eventCard.className = `event-card ${event.type}`;
-                eventCard.innerHTML = `
-                    <button class="delete-btn" onclick="deleteEvent(${event.id})">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                    <div class="event-header">
-                        <div class="dungeon-icon">
-                            <i class="fa-solid ${getEventIcon(event.type)}"></i>
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('Failed to load events');
+                }
+                
+                const events = await response.json();
+                
+                eventsList.innerHTML = '';
+                document.getElementById('loadingSpinner').style.display = 'none';
+                
+                if (events.length === 0) {
+                    eventsList.innerHTML = '<div class="no-events"><i class="fa-solid fa-calendar-xmark"></i><h4>No events scheduled yet!</h4><p>Schedule your first dungeon run above</p></div>';
+                    return;
+                }
+                
+                // Sort events by date
+                events.sort((a, b) => a.timestamp - b.timestamp);
+                
+                // Display events
+                events.forEach(event => {
+                    const eventDate = new Date(event.time);
+                    const formattedDate = eventDate.toLocaleString();
+                    
+                    const eventCard = document.createElement('div');
+                    eventCard.className = `event-card ${event.type}`;
+                    eventCard.innerHTML = `
+                        <button class="delete-btn" onclick="deleteEvent('${event.id}')">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                        <div class="event-header">
+                            <div class="dungeon-icon">
+                                <i class="fa-solid ${getEventIcon(event.type)}"></i>
+                            </div>
+                            <div class="event-info">
+                                <h4>${event.dungeon}</h4>
+                                <div class="dungeon-level">Level: ${event.level}</div>
+                                <div class="event-type">${getEventTypeName(event.type)}</div>
+                            </div>
+                            <div class="event-date">${formattedDate}</div>
                         </div>
-                        <div class="event-info">
-                            <h4>${event.dungeon}</h4>
-                            <div class="dungeon-level">Level: ${event.level}</div>
-                            <div class="event-type">${getEventTypeName(event.type)}</div>
+                        <div class="event-details">
+                            <p><strong>Organizer:</strong> <span class="player">${event.player}</span></p>
+                            <p><strong>Loot Target:</strong> <span class="loot">${event.loot}</span></p>
+                            ${event.notes ? `<p><strong>Notes:</strong> ${event.notes}</p>` : ''}
                         </div>
-                        <div class="event-date">${formattedDate}</div>
-                    </div>
-                    <div class="event-details">
-                        <p><strong>Organizer:</strong> <span class="player">${event.player}</span></p>
-                        <p><strong>Loot Target:</strong> <span class="loot">${event.loot}</span></p>
-                        ${event.notes ? `<p><strong>Notes:</strong> ${event.notes}</p>` : ''}
-                    </div>
-                    <div class="signups">
-                        <h5>Signups (${event.signups.length})</h5>
-                        <div class="signup-list" id="signups-${event.id}">
-                            ${renderSignups(event.signups)}
+                        <div class="signups">
+                            <h5>Signups (${event.signups.length})</h5>
+                            <div class="signup-list" id="signups-${event.id}">
+                                ${renderSignups(event.signups)}
+                            </div>
+                            <div class="signup-form">
+                                <input type="text" id="signup-player-${event.id}" placeholder="Your character">
+                                <input type="text" id="signup-loot-${event.id}" placeholder="Loot target">
+                                <button onclick="addSignup('${event.id}')"><i class="fa-solid fa-plus"></i></button>
+                            </div>
                         </div>
-                        <div class="signup-form">
-                            <input type="text" id="signup-player-${event.id}" placeholder="Your character">
-                            <input type="text" id="signup-loot-${event.id}" placeholder="Loot target">
-                            <button onclick="addSignup(${event.id})"><i class="fa-solid fa-plus"></i></button>
-                        </div>
-                    </div>
-                `;
-                eventsList.appendChild(eventCard);
-            });
+                    `;
+                    eventsList.appendChild(eventCard);
+                });
+            } catch (error) {
+                console.error("Error loading events: ", error);
+                eventsList.innerHTML = '<div class="no-events"><i class="fa-solid fa-exclamation-triangle"></i><h4>Error loading events</h4><p>Please try again later</p></div>';
+                document.getElementById('loadingSpinner').style.display = 'none';
+            }
         }
         
         // Render signups list
@@ -974,7 +906,7 @@
         }
         
         // Add signup to an event
-        function addSignup(eventId) {
+        async function addSignup(eventId) {
             const playerInput = document.getElementById(`signup-player-${eventId}`);
             const lootInput = document.getElementById(`signup-loot-${eventId}`);
             const player = playerInput.value.trim();
@@ -985,42 +917,66 @@
                 return;
             }
             
-            const storedEvents = localStorage.getItem('wowEvents');
-            if (!storedEvents) return;
-            
-            const events = JSON.parse(storedEvents);
-            const eventIndex = events.findIndex(e => e.id === eventId);
-            
-            if (eventIndex === -1) return;
-            
-            // Add signup
-            events[eventIndex].signups.push({
+            const signup = {
                 player: player,
                 loot: loot || "Any loot"
-            });
+            };
             
-            // Save back to storage
-            localStorage.setItem('wowEvents', JSON.stringify(events));
-            
-            // Refresh signups list
-            const signupList = document.getElementById(`signups-${eventId}`);
-            signupList.innerHTML = renderSignups(events[eventIndex].signups);
-            
-            // Clear inputs
-            playerInput.value = '';
-            lootInput.value = '';
+            try {
+                // Get current event
+                const response = await fetch(`${API_URL}/events/${eventId}`);
+                if (!response.ok) {
+                    throw new Error('Failed to get event');
+                }
+                
+                const event = await response.json();
+                
+                // Add signup
+                const updatedSignups = [...(event.signups || []), signup];
+                
+                // Update event
+                const updateResponse = await fetch(`${API_URL}/events/${eventId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ signups: updatedSignups })
+                });
+                
+                if (!updateResponse.ok) {
+                    throw new Error('Failed to add signup');
+                }
+                
+                // Clear inputs
+                playerInput.value = '';
+                lootInput.value = '';
+                
+                // Refresh signups list
+                const signupList = document.getElementById(`signups-${eventId}`);
+                signupList.innerHTML = renderSignups(updatedSignups);
+            } catch (error) {
+                console.error("Error adding signup: ", error);
+                alert("Error adding signup. Please try again.");
+            }
         }
         
         // Delete event
-        function deleteEvent(id) {
+        async function deleteEvent(eventId) {
             if(!confirm("Are you sure you want to remove this event?")) return;
             
-            const storedEvents = localStorage.getItem('wowEvents');
-            if(storedEvents) {
-                let events = JSON.parse(storedEvents);
-                events = events.filter(event => event.id !== id);
-                localStorage.setItem('wowEvents', JSON.stringify(events));
+            try {
+                const response = await fetch(`${API_URL}/events/${eventId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to delete event');
+                }
+                
                 loadEvents();
+            } catch (error) {
+                console.error("Error deleting event: ", error);
+                alert("Error deleting event. Please try again.");
             }
         }
         
@@ -1054,7 +1010,7 @@
         }
         
         // Initialize the app when page loads
-        window.addEventListener('DOMContentLoaded', initApp);
+        document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
