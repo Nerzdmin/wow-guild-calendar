@@ -1,0 +1,267 @@
+/* ============================================================
+   Smartlight Live Chat – Front-end Widget Styles
+   ============================================================ */
+
+:root {
+    --slc-accent:   #e63c1e;
+    --slc-radius:   12px;
+    --slc-shadow:   0 6px 32px rgba(0,0,0,.18);
+    --slc-font:     system-ui, -apple-system, sans-serif;
+    --slc-bg:       #fff;
+    --slc-msg-op:   #f1f3f5;
+    --slc-msg-vis:  var(--slc-accent);
+    --slc-z:        99999;
+}
+
+/* ── Root container ────────────────────────────────────────── */
+#slc-root {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: var(--slc-z);
+    font-family: var(--slc-font);
+    font-size: 15px;
+    line-height: 1.45;
+}
+#slc-root.slc-left {
+    right: auto;
+    left: 24px;
+}
+
+/* ── Toggle bubble ─────────────────────────────────────────── */
+#slc-toggle {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: var(--slc-accent);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--slc-shadow);
+    transition: transform .2s ease, box-shadow .2s ease;
+    position: relative;
+    outline-offset: 3px;
+}
+#slc-toggle:hover  { transform: scale(1.07); box-shadow: 0 8px 36px rgba(0,0,0,.22); }
+#slc-toggle:active { transform: scale(.96); }
+#slc-toggle svg { width: 26px; height: 26px; fill: #fff; display: block; }
+
+#slc-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    background: #d32f2f;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+    padding: 0 4px;
+    border: 2px solid #fff;
+    pointer-events: none;
+}
+
+/* ── Chat window ───────────────────────────────────────────── */
+#slc-window {
+    position: absolute;
+    bottom: 70px;
+    right: 0;
+    width: 340px;
+    max-width: calc(100vw - 48px);
+    border-radius: var(--slc-radius);
+    background: var(--slc-bg);
+    box-shadow: var(--slc-shadow);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slcSlideIn .22s ease;
+}
+#slc-root.slc-left #slc-window {
+    right: auto;
+    left: 0;
+}
+@keyframes slcSlideIn {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Header ────────────────────────────────────────────────── */
+#slc-header {
+    background: var(--slc-accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+}
+#slc-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255,255,255,.5);
+    flex-shrink: 0;
+}
+#slc-operator-name {
+    flex: 1;
+    font-weight: 600;
+    font-size: 15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#slc-close-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 2px 4px;
+    border-radius: 4px;
+    opacity: .8;
+    transition: opacity .15s;
+}
+#slc-close-btn:hover { opacity: 1; }
+
+/* ── Pre-chat form ─────────────────────────────────────────── */
+#slc-prechat {
+    padding: 18px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+#slc-welcome-text {
+    margin: 0 0 6px;
+    color: #444;
+    font-size: 14px;
+}
+#slc-prechat label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #555;
+}
+#slc-prechat input {
+    border: 1px solid #d1d5db;
+    border-radius: 7px;
+    padding: 9px 11px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color .15s;
+    width: 100%;
+    box-sizing: border-box;
+}
+#slc-prechat input:focus { border-color: var(--slc-accent); }
+#slc-start-btn {
+    margin-top: 4px;
+    background: var(--slc-accent);
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 10px 0;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter .15s;
+}
+#slc-start-btn:hover { filter: brightness(1.1); }
+
+/* ── Messages list ─────────────────────────────────────────── */
+#slc-body {
+    flex: 1;
+    min-height: 200px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 12px 12px 4px;
+    scroll-behavior: smooth;
+}
+#slc-messages {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+#slc-messages li {
+    max-width: 80%;
+    padding: 9px 13px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+#slc-messages li.slc-op {
+    background: var(--slc-msg-op);
+    color: #222;
+    align-self: flex-start;
+    border-bottom-left-radius: 3px;
+}
+#slc-messages li.slc-vis {
+    background: var(--slc-msg-vis);
+    color: #fff;
+    align-self: flex-end;
+    border-bottom-right-radius: 3px;
+}
+#slc-messages li .slc-time {
+    display: block;
+    font-size: 10px;
+    margin-top: 4px;
+    opacity: .65;
+}
+
+/* ── Input area ────────────────────────────────────────────── */
+#slc-footer {
+    border-top: 1px solid #e8eaed;
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    padding: 8px 10px;
+}
+#slc-input {
+    flex: 1;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 14px;
+    resize: none;
+    outline: none;
+    transition: border-color .15s;
+    font-family: var(--slc-font);
+}
+#slc-input:focus { border-color: var(--slc-accent); }
+#slc-send-btn {
+    background: var(--slc-accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter .15s;
+    white-space: nowrap;
+}
+#slc-send-btn:hover    { filter: brightness(1.12); }
+#slc-send-btn:disabled { opacity: .5; cursor: default; }
+
+/* ── Closed notice ─────────────────────────────────────────── */
+#slc-closed-notice {
+    padding: 14px 16px;
+    text-align: center;
+    font-size: 14px;
+    color: #666;
+    border-top: 1px solid #e8eaed;
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 400px) {
+    #slc-root { bottom: 12px; right: 12px; }
+    #slc-root.slc-left { right: auto; left: 12px; }
+    #slc-window { width: calc(100vw - 24px); }
+}
